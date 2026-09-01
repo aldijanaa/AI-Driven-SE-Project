@@ -1,0 +1,14 @@
+{
+  "name": "travelmatch-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server exposing TravelMatch's destination-matching engine as a tool",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.5.4"
+  }
+}
