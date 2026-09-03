@@ -1,7 +1,7 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 
 export async function getMatches(answers) {
-  const response = await fetch(`${API_BASE}/match`, {
+  const response = await fetch(`${API_BASE}/match.php`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(answers),
@@ -17,7 +17,7 @@ export async function getMatches(answers) {
 }
 
 export async function sendResultsByEmail(email, results) {
-  const response = await fetch(`${API_BASE}/notify`, {
+  const response = await fetch(`${API_BASE}/notify.php`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, results }),

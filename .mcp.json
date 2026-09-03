@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "travelmatch": {
+      "command": "node",
+      "args": ["mcp-server/index.js"],
+      "env": {
+        "TRAVELMATCH_BACKEND_URL": "http://localhost:8000/api"
+      }
+    }
+  }
+}

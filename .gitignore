@@ -27,5 +27,5 @@ lerna-debug.log*
 *.sw?
 
 /my-project
-
-schema.sql
+backend/vendor
+backend/.phpunit.result.cache
