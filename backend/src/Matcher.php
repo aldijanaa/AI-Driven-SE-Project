@@ -165,7 +165,7 @@ function formatBestTime(array $dest): string
     return $start === $end ? $start : "{$start}–{$end}";
 }
 
-function matchDestinations(array $answers, array $destinations, int $limit = 3): array
+function rankDestinations(array $answers, array $destinations, int $limit = 3): array
 {
     $interests = array_slice($answers['interests'] ?? [], 0, 4);
     $style = $answers['style'] ?? 'balanced';
@@ -213,7 +213,15 @@ function matchDestinations(array $answers, array $destinations, int $limit = 3):
 
     usort($results, fn ($a, $b) => $b['match'] <=> $a['match']);
 
-    $topResults = array_slice($results, 0, $limit);
+    return array_slice($results, 0, $limit);
+}
+
+function matchDestinations(array $answers, array $destinations, int $limit = 3): array
+{
+    $interests = array_slice($answers['interests'] ?? [], 0, 4);
+    $budgetLevel = $answers['budgetLevel'] ?? 'moderate';
+
+    $topResults = rankDestinations($answers, $destinations, $limit);
     $destinationsByName = array_column($destinations, null, 'name');
 
     $ragEntries = array_map(function ($result) use ($destinationsByName, $interests, $budgetLevel, $answers) {

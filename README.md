@@ -7,45 +7,65 @@ budget estimate, and a recommended stay length.
 ## Structure
 
 - `frontend/` — React (Vite) quiz UI.
-- `backend/` — PHP API that scores destinations against your answers and
-  generates personalized descriptions via RAG (destination knowledge base +
-  Google Gemini), reading from and writing to PostgreSQL.
-- `database/` — `schema.sql` (tables + seed data) for the PostgreSQL database.
-- `mcp-server/` — MCP server exposing the matching engine as a tool
-  (`get_travel_recommendations`) for Claude Desktop/Code or other MCP
-  clients.
-- `automation/` — N8N workflow that emails a user their results.
+- `backend/` — PHP API that scores and ranks destinations, and generates
+  personalized descriptions via RAG (destination knowledge base + Google
+  Gemini), reading from and writing to PostgreSQL.
+- `mcp-server/` — MCP server exposing the matching engine as a tool for
+  Claude Desktop/Code or other MCP clients.
+- `automation/` — n8n workflow that emails a user their results.
+- `tests/` — PHPUnit tests for the backend.
 
-## Running locally
+## Setup
+
+### 1. Database
+
+The PostgreSQL database holding destinations, their knowledge base, and
+quiz submissions.
+
+- Create a database (e.g. `travel-match`).
+- Run `schema.sql` against it (psql, pgAdmin, or any SQL client) to create
+  the tables and seed the destination data.
+
+### 2. Backend
+
+The PHP API that scores destinations and serves the frontend.
+
+- Create `backend/.env` with `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`,
+  `DB_PASSWORD` matching the database from step 1.
+- Optionally add `GEMINI_API_KEY` (free key at
+  https://aistudio.google.com/apikey) to enable AI-generated descriptions —
+  without it, the app falls back to templated descriptions and still works.
+- Optionally add `N8N_WEBHOOK_URL` to enable "email me my results" — set
+  that workflow up first following `automation/README.md`.
+- Start it:
+  ```
+  php -S localhost:8000 -t backend backend/index.php
+  ```
+
+### 3. Frontend
+
+The React quiz UI the user interacts with.
+
+- Install and run it:
+  ```
+  cd frontend
+  npm install
+  npm run dev
+  ```
+- By default it calls the API at `http://localhost:8000/api`. If your
+  backend runs elsewhere, set `VITE_API_URL` in `frontend/.env`.
+
+## API
+
+- `POST /api/match` — quiz answers in, top destination matches out.
+- `POST /api/notify` — `{ email, results }`, emails the results.
+- `GET /api/health` — health check.
+
+## Tests
 
 ```
-# database — create a database and run database/schema.sql against it
-# (via pgAdmin's Query Tool, or Docker — see database/README.md for both)
-
-# backend (from repo root) — set DB_* vars in backend/.env first (see .env.example)
-php -S localhost:8000 -t backend
-
-# frontend (in another terminal)
-cd frontend
-npm install
-npm run dev
+cd backend
+php vendor/bin/phpunit
 ```
 
-The frontend expects the API at `http://localhost:8000/api` — override with
-`VITE_API_URL` in `frontend/.env` if needed (see `.env.example`).
-
-### Enabling AI-generated descriptions
-
-Get a free key at https://aistudio.google.com/apikey, copy
-`backend/.env.example` to `backend/.env`, and set `GEMINI_API_KEY`.
-Without it, the backend falls back to templated descriptions — the app
-stays fully functional either way.
-
-### Enabling "email me my results"
-
-Set up the N8N workflow in `automation/` (see `automation/README.md`), then
-put its webhook URL in `backend/.env` as `N8N_WEBHOOK_URL`.
-
-### MCP server
-
-See `mcp-server/README.md`.
+See `mcp-server/README.md` and `automation/README.md` for those pieces.
