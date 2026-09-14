@@ -1,0 +1,59 @@
+{
+  "name": "TravelMatch - Email Verification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "travelmatch-verification",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "3a8f0f1a-0003-4a3e-9b1a-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-200, 0],
+      "webhookId": "travelmatch-verification"
+    },
+    {
+      "parameters": {
+        "jsCode": "const { email, code } = $input.first().json.body;\n\nconst html = `\n  <div style=\"font-family:sans-serif;max-width:420px;margin:0 auto;text-align:center;\">\n    <h2>✈️ Confirm your TravelMatch account</h2>\n    <p style=\"color:#333;\">Enter this code in the app to finish signing up:</p>\n    <p style=\"font-size:36px;font-weight:700;letter-spacing:8px;color:#aa3bff;margin:24px 0;\">${code}</p>\n    <p style=\"color:#777;font-size:13px;\">This code expires in 15 minutes. If you didn't create a TravelMatch account, you can ignore this email.</p>\n  </div>`;\n\nreturn [{ json: { email, html } }];"
+      },
+      "id": "3a8f0f1a-0003-4a3e-9b1a-000000000002",
+      "name": "Format Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [20, 0]
+    },
+    {
+      "parameters": {
+        "fromEmail": "travelmatch@example.com",
+        "toEmail": "={{ $json.email }}",
+        "subject": "Your TravelMatch verification code",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "3a8f0f1a-0003-4a3e-9b1a-000000000003",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [240, 0],
+      "credentials": {
+        "smtp": {
+          "id": "REPLACE_WITH_YOUR_SMTP_CREDENTIAL_ID",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Format Email", "type": "main", "index": 0 }]]
+    },
+    "Format Email": {
+      "main": [[{ "node": "Send Email", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" }
+}

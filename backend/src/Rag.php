@@ -44,7 +44,16 @@ function retrieveKnowledge(string $destinationName, array $interests, string $bu
 function buildRagPrompt(array $dest, array $answers, array $chunks): string
 {
     $interests = implode(', ', $answers['interests'] ?? []);
-    $knowledgeBlock = $chunks ? "Known facts about {$dest['name']}:\n- " . implode("\n- ", $chunks) : '';
+
+    // Combine the curated, tag-matched knowledge chunks with the
+    // destination's Wikipedia extract (if resolved) so the model is
+    // grounded in an actual cited, trusted source rather than hand-written
+    // facts alone - the same extract/link the UI shows the user.
+    $allFacts = $chunks;
+    if (!empty($dest['wikipedia_extract'])) {
+        $allFacts[] = "(From Wikipedia) {$dest['wikipedia_extract']}";
+    }
+    $knowledgeBlock = $allFacts ? "Known facts about {$dest['name']}:\n- " . implode("\n- ", $allFacts) : '';
 
     return <<<PROMPT
         A traveler is looking for a destination recommendation. Write exactly
@@ -99,13 +108,15 @@ function extractGeminiText(?string $response, int $status): ?string
  * unexpected response) so the app stays functional without it.
  *
  * @param array $entries list of ['dest' => .., 'answers' => .., 'chunks' => .., 'fallback' => ..]
- * @return string[] descriptions, in the same order as $entries
+ * @return array[] list of ['text' => .., 'source' => 'gemini'|'fallback'], in the same order as
+ *                  $entries - 'source' lets callers show the user whether a description is
+ *                  LLM-grounded or the deterministic template, rather than presenting both as equal.
  */
 function generateDescriptionsBatch(array $entries): array
 {
     $apiKey = getenv('GEMINI_API_KEY');
     if (!$apiKey) {
-        return array_map(fn ($e) => $e['fallback'], $entries);
+        return array_map(fn ($e) => ['text' => $e['fallback'], 'source' => 'fallback'], $entries);
     }
 
     $model = getenv('GEMINI_MODEL') ?: 'gemini-flash-lite-latest';
@@ -151,7 +162,10 @@ function generateDescriptionsBatch(array $entries): array
         curl_multi_remove_handle($multi, $ch);
         curl_close($ch);
 
-        $results[$i] = extractGeminiText($response, $status) ?? $entries[$i]['fallback'];
+        $text = extractGeminiText($response, $status);
+        $results[$i] = $text !== null
+            ? ['text' => $text, 'source' => 'gemini']
+            : ['text' => $entries[$i]['fallback'], 'source' => 'fallback'];
     }
     curl_multi_close($multi);
 

@@ -29,3 +29,4 @@ lerna-debug.log*
 /my-project
 backend/vendor
 backend/.phpunit.result.cache
+backend/cacert.pem

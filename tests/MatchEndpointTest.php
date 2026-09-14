@@ -17,7 +17,7 @@ final class MatchEndpointTest extends TestCase
 
     private function noopLogSubmission(): callable
     {
-        return function (array $answers, ?array $topMatch): void {};
+        return function (array $answers, array $results, ?int $userId): void {};
     }
 
     public function testOptionsRequestReturnsNoContentWithoutRunningTheMatch(): void
@@ -25,6 +25,7 @@ final class MatchEndpointTest extends TestCase
         $response = handleMatchRequest(
             'OPTIONS',
             '',
+            null,
             fn () => $this->fail('getDestinations should not be called for OPTIONS'),
             fn () => $this->fail('matchDestinations should not be called for OPTIONS'),
             fn () => $this->fail('logSubmission should not be called for OPTIONS')
@@ -39,6 +40,7 @@ final class MatchEndpointTest extends TestCase
         $response = handleMatchRequest(
             'GET',
             '',
+            null,
             fn () => [],
             fn () => [],
             $this->noopLogSubmission()
@@ -53,6 +55,7 @@ final class MatchEndpointTest extends TestCase
         $response = handleMatchRequest(
             'POST',
             '{not valid json',
+            null,
             fn () => [],
             fn () => [],
             $this->noopLogSubmission()
@@ -70,6 +73,7 @@ final class MatchEndpointTest extends TestCase
         $response = handleMatchRequest(
             'POST',
             json_encode($answers),
+            null,
             fn () => [],
             fn () => [],
             $this->noopLogSubmission()
@@ -87,6 +91,7 @@ final class MatchEndpointTest extends TestCase
         $response = handleMatchRequest(
             'POST',
             json_encode($this->validAnswers()),
+            null,
             fn () => $fakeDestinations,
             function (array $answers, array $destinations) use ($fakeDestinations, $fakeResults) {
                 $this->assertSame($fakeDestinations, $destinations);
@@ -99,39 +104,44 @@ final class MatchEndpointTest extends TestCase
         $this->assertSame(['results' => $fakeResults], $response['body']);
     }
 
-    public function testValidRequestLogsTheTopMatch(): void
+    public function testValidRequestLogsTheFullResultsAndUserId(): void
     {
         $fakeResults = [['name' => 'Lisbon', 'match' => 90], ['name' => 'Porto', 'match' => 70]];
-        $logged = null;
+        $loggedResults = null;
+        $loggedUserId = 'not yet called';
 
         $response = handleMatchRequest(
             'POST',
             json_encode($this->validAnswers()),
+            42,
             fn () => [],
             fn () => $fakeResults,
-            function (array $answers, ?array $topMatch) use (&$logged): void {
-                $logged = $topMatch;
+            function (array $answers, array $results, ?int $userId) use (&$loggedResults, &$loggedUserId): void {
+                $loggedResults = $results;
+                $loggedUserId = $userId;
             }
         );
 
         $this->assertSame(200, $response['status']);
-        $this->assertSame($fakeResults[0], $logged);
+        $this->assertSame($fakeResults, $loggedResults);
+        $this->assertSame(42, $loggedUserId);
     }
 
-    public function testValidRequestLogsNullTopMatchWhenThereAreNoResults(): void
+    public function testValidRequestLogsNullUserIdForAGuest(): void
     {
-        $logged = 'not yet called';
+        $loggedUserId = 'not yet called';
 
         handleMatchRequest(
             'POST',
             json_encode($this->validAnswers()),
+            null,
             fn () => [],
             fn () => [],
-            function (array $answers, ?array $topMatch) use (&$logged): void {
-                $logged = $topMatch;
+            function (array $answers, array $results, ?int $userId) use (&$loggedUserId): void {
+                $loggedUserId = $userId;
             }
         );
 
-        $this->assertNull($logged);
+        $this->assertNull($loggedUserId);
     }
 }
