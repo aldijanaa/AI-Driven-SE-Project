@@ -40,10 +40,11 @@ The PHP API that scores destinations and serves the frontend.
 - Optionally add `GEMINI_API_KEY` (free key at
   https://aistudio.google.com/apikey) to enable AI-generated descriptions —
   without it, the app falls back to templated descriptions and still works.
-- Optionally add `N8N_WEBHOOK_URL` to enable "email me my results", and/or
-  `N8N_PASSWORD_RESET_WEBHOOK_URL` to enable "forgot your password" emails —
+- Optionally add `N8N_WEBHOOK_URL` to enable "email me my results",
+  `N8N_PASSWORD_RESET_WEBHOOK_URL` to enable "forgot your password" emails,
+  and/or `N8N_VERIFICATION_WEBHOOK_URL` to enable "verify your email" —
   set those workflows up first following `automation/README.md`. Without
-  the latter, forgot-password still "works" (same response either way,
+  them, the relevant feature still "works" (same response either way,
   see below) but no email actually goes out.
 - Set `FRONTEND_URL` (default `http://localhost:5173`) so password reset
   emails link back to the right place.
@@ -86,8 +87,11 @@ point it at the repo. `render.yaml` provisions three things in one go:
   publishes `frontend/dist`). Static sites on Render's free tier don't
   spin down, unlike the free web service.
 
-It'll prompt you for `GEMINI_API_KEY` (marked `sync: false`, so it's not
-committed).
+It'll prompt you for the vars marked `sync: false` (so they're not
+committed): `GEMINI_API_KEY`, and optionally `N8N_WEBHOOK_URL`,
+`N8N_PASSWORD_RESET_WEBHOOK_URL`, `N8N_VERIFICATION_WEBHOOK_URL` (same as
+in local setup above — leave any of the three blank if you don't need that
+email feature in prod).
 
 `render.yaml` assumes both services keep their default names, giving
 predictable URLs (`https://travelmatch-backend.onrender.com`,
@@ -118,19 +122,6 @@ inactivity (cold start on the next request; the static frontend doesn't),
 and the free Postgres database expires 30 days after creation (14-day
 grace period to upgrade before it's deleted) — fine for a demo/student
 project, not for anything long-lived without upgrading the plan.
-
-### 2. Frontend (GitHub Pages)
-
-`.github/workflows/deploy-frontend.yml` builds and deploys `frontend/` on
-every push to `main` that touches it. One-time setup:
-
-- Repo Settings → Pages → Source: **GitHub Actions**.
-- Repo Settings → Secrets and variables → Actions → Variables → add
-  `VITE_API_URL` = your Heroku app's URL + `/api` (e.g.
-  `https://your-app-name.herokuapp.com/api`).
-
-The Vite `base` is already set to `/AI-Driven-SE-Project/` for production
-builds to match this repo's GitHub Pages URL.
 
 ## AI-generated descriptions: sources & trustworthiness
 
