@@ -81,8 +81,10 @@ Push this repo to GitHub, then in the Render dashboard: **New → Blueprint**,
 point it at the repo. `render.yaml` provisions three things in one go:
 - `travelmatch-db` — free Postgres.
 - `travelmatch-backend` — Docker web service (`php:8.2-apache`, no native
-  PHP runtime on Render, document root `backend/api/`; the backend itself
-  has no runtime dependencies, the root `Dockerfile` exists only for this).
+  PHP runtime on Render, document root `backend/` so `/api/*.php` paths
+  resolve the same way they do against the local `php -S` dev server; the
+  backend itself has no runtime dependencies, the root `Dockerfile` exists
+  only for this).
 - `travelmatch-frontend` — static site (`npm run build` in `frontend/`,
   publishes `frontend/dist`). Static sites on Render's free tier don't
   spin down, unlike the free web service.

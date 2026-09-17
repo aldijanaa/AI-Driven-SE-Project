@@ -8,7 +8,7 @@ RUN apt-get update \
 
 COPY . /var/www/html
 
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/backend/api
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/backend
 RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-available/*.conf
 
 # Render assigns the listen port at runtime via $PORT (default 10000); Apache's
