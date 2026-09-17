@@ -21,3 +21,17 @@ function loadEnv(string $path): void
         }
     }
 }
+
+/**
+ * backend/cacert.pem is an optional, gitignored CA bundle some local dev
+ * setups (e.g. PHP on Windows without a system CA store) need for curl to
+ * verify HTTPS. Servers with a real system CA store (any Linux deploy,
+ * including the Docker image used on Render) don't need or have it, so
+ * this only adds CURLOPT_CAINFO when the file actually exists.
+ */
+function curlCaOptions(): array
+{
+    $cacert = __DIR__ . '/../../cacert.pem';
+
+    return is_file($cacert) ? [CURLOPT_CAINFO => $cacert] : [];
+}

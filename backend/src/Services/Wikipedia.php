@@ -30,11 +30,10 @@ function fetchWikipediaSummary(string $title): ?array
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT => 8,
-        CURLOPT_CAINFO => __DIR__ . '/../cacert.pem',
         CURLOPT_HTTPHEADER => [
             'User-Agent: TravelMatch-StudentProject/1.0 (https://github.com/; educational use)',
         ],
-    ]);
+    ] + curlCaOptions());
     $response = curl_exec($ch);
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);

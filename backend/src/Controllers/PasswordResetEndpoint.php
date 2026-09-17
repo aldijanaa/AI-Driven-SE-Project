@@ -131,9 +131,8 @@ function sendPasswordResetEmail(string $email, string $token): void
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => json_encode(['email' => $email, 'resetUrl' => $resetUrl]),
             CURLOPT_TIMEOUT => 8,
-            CURLOPT_CAINFO => __DIR__ . '/../cacert.pem',
             CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-        ]);
+        ] + curlCaOptions());
         curl_exec($ch);
         curl_close($ch);
     } catch (Throwable $e) {
