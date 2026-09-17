@@ -15,10 +15,20 @@ services:
           name: travelmatch-db
           property: connectionString
       - key: FRONTEND_URL
-        value: https://aldijanaa.github.io/AI-Driven-SE-Project
+        value: https://travelmatch-frontend.onrender.com
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_MODEL
         value: gemini-flash-lite-latest
       - key: N8N_WEBHOOK_URL
         sync: false
+
+  - type: web
+    name: travelmatch-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://travelmatch-backend.onrender.com/api

@@ -67,49 +67,57 @@ The React quiz UI the user interacts with.
 
 ## Deployment
 
-Backend + database go to Render, frontend goes to GitHub Pages. CORS is
-wide open (`Access-Control-Allow-Origin: *`) and auth uses a `Bearer` token
-(no cookies), so the two can live on different origins without extra setup.
-Render's free tier needs no credit card, unlike Heroku.
+Everything goes to Render — backend (Docker web service), database (managed
+Postgres), and frontend (static site) — via the `render.yaml` Blueprint at
+the repo root. CORS is wide open (`Access-Control-Allow-Origin: *`) and
+auth uses a `Bearer` token (no cookies), so this would also work split
+across origins, but one platform is simpler. Render's free tier needs no
+credit card, unlike Heroku.
 
-### 1. Backend + database (Render)
+### 1. Deploy the Blueprint
 
-The root `Dockerfile` exists only for this — Render has no native PHP
-runtime, so the backend (which itself has no runtime dependencies) is served
-via `php:8.2-apache` with its document root pointed at `backend/api/`.
+Push this repo to GitHub, then in the Render dashboard: **New → Blueprint**,
+point it at the repo. `render.yaml` provisions three things in one go:
+- `travelmatch-db` — free Postgres.
+- `travelmatch-backend` — Docker web service (`php:8.2-apache`, no native
+  PHP runtime on Render, document root `backend/api/`; the backend itself
+  has no runtime dependencies, the root `Dockerfile` exists only for this).
+- `travelmatch-frontend` — static site (`npm run build` in `frontend/`,
+  publishes `frontend/dist`). Static sites on Render's free tier don't
+  spin down, unlike the free web service.
 
-Easiest path: push this repo to GitHub, then in the Render dashboard use
-**New → Blueprint** and point it at the repo — `render.yaml` at the repo
-root provisions both the free Postgres database and the Docker web service
-in one go. It'll prompt you for `GEMINI_API_KEY` (marked `sync: false`,
-so it's not committed) and leaves `FRONTEND_URL` set to this repo's GitHub
-Pages URL; adjust `render.yaml` first if yours differs.
+It'll prompt you for `GEMINI_API_KEY` (marked `sync: false`, so it's not
+committed).
 
-Without the Blueprint, do it manually:
-1. New → PostgreSQL → free plan → note the **Internal Database URL**.
-2. New → Web Service → Docker runtime, this repo → free plan.
-3. Set env vars on the web service: `DATABASE_URL` (the value from step 1),
-   `FRONTEND_URL`, `GEMINI_API_KEY`, and optionally `GEMINI_MODEL` /
-   `N8N_WEBHOOK_URL`.
+`render.yaml` assumes both services keep their default names, giving
+predictable URLs (`https://travelmatch-backend.onrender.com`,
+`https://travelmatch-frontend.onrender.com`) that `FRONTEND_URL` and
+`VITE_API_URL` are pre-wired to. If either name is already taken on Render,
+it'll get a different URL instead — update `FRONTEND_URL` on the backend
+service and `VITE_API_URL` on the frontend service (Settings → Environment)
+to match, which triggers a redeploy of each.
 
-Then load the schema and migrations into the new database, in order (use
-the **External Database URL** from the Render dashboard here, since your
-machine isn't on Render's internal network):
+### 2. Load the database
+
+Load the schema and migrations, in order, using the backend database's
+**External Database URL** from the Render dashboard (your machine isn't on
+Render's internal network, so the **Internal** URL won't resolve here):
 
 ```
 psql "$EXTERNAL_DATABASE_URL" < backend/database/schema.sql
 for f in backend/database/migrations/*.sql; do psql "$EXTERNAL_DATABASE_URL" < "$f"; done
 ```
 
-`DATABASE_URL` is parsed (with `sslmode=require`) by
+`DATABASE_URL` (wired automatically from `travelmatch-db` via
+`fromDatabase` in `render.yaml`) is parsed (with `sslmode=require`) by
 `backend/database/Database.php` — no `DB_HOST`/`DB_USER`/etc. env vars
 needed on Render.
 
-**Free-tier caveats:** the free web service spins down after inactivity
-(cold start on the next request), and the free Postgres database expires
-30 days after creation (14-day grace period to upgrade before it's
-deleted) — fine for a demo/student project, not for anything long-lived
-without upgrading the plan.
+**Free-tier caveats:** the free backend web service spins down after
+inactivity (cold start on the next request; the static frontend doesn't),
+and the free Postgres database expires 30 days after creation (14-day
+grace period to upgrade before it's deleted) — fine for a demo/student
+project, not for anything long-lived without upgrading the plan.
 
 ### 2. Frontend (GitHub Pages)
 
