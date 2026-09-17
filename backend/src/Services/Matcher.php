@@ -201,6 +201,7 @@ function rankDestinations(array $answers, array $destinations, int $limit = 3): 
         }
 
         $results[] = [
+            'id' => $dest['id'] ?? null,
             'name' => $dest['name'],
             'country' => $dest['country'],
             'match' => (int) round(max(0, min(100, $total * 100))),
@@ -208,6 +209,9 @@ function rankDestinations(array $answers, array $destinations, int $limit = 3): 
             'best_time' => formatBestTime($dest),
             'budget_estimate' => sprintf('€%d–%d', $dest['budget_min'], $dest['budget_max']),
             'recommended_stay' => "{$dest['stay_min']}–{$dest['stay_max']} days",
+            'photo_url' => $dest['photo_url'] ?? null,
+            'wikipedia_url' => $dest['wikipedia_url'] ?? null,
+            'wikipedia_extract' => $dest['wikipedia_extract'] ?? null,
         ];
     }
 
@@ -238,7 +242,11 @@ function matchDestinations(array $answers, array $destinations, int $limit = 3):
     $descriptions = generateDescriptionsBatch($ragEntries);
 
     foreach ($topResults as $i => &$result) {
-        $result['description'] = $descriptions[$i];
+        $result['description'] = $descriptions[$i]['text'];
+        // Lets the UI show a "grounded in curated facts + Wikipedia" citation
+        // only when that's actually true - not next to the deterministic
+        // template fallback, which isn't RAG-grounded.
+        $result['description_source'] = $descriptions[$i]['source'];
     }
     unset($result);
 
