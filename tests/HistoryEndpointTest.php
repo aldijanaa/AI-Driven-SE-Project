@@ -66,4 +66,67 @@ final class HistoryEndpointTest extends TestCase
         $this->assertSame($fakeSubmissions, $response['body']['submissions']);
         $this->assertSame(9, $lookedUpUserId);
     }
+
+    public function testDeleteMissingAuthHeaderIsRejected(): void
+    {
+        $response = handleHistoryRequest(
+            'DELETE',
+            null,
+            fn () => $this->fail('findUserBySessionTokenHash should not be called without a token'),
+            fn () => [],
+            '1',
+            fn () => $this->fail('deleteSubmissionByUserId should not be called without a token')
+        );
+
+        $this->assertSame(401, $response['status']);
+    }
+
+    public function testDeleteWithoutIdIsRejected(): void
+    {
+        $response = handleHistoryRequest(
+            'DELETE',
+            'Bearer good-token',
+            fn () => ['id' => 9, 'first_name' => 'Ada'],
+            fn () => [],
+            null,
+            fn () => $this->fail('deleteSubmissionByUserId should not be called without an id')
+        );
+
+        $this->assertSame(422, $response['status']);
+    }
+
+    public function testDeleteOfMissingOrUnownedSubmissionReturnsNotFound(): void
+    {
+        $response = handleHistoryRequest(
+            'DELETE',
+            'Bearer good-token',
+            fn () => ['id' => 9, 'first_name' => 'Ada'],
+            fn () => [],
+            '42',
+            fn () => false
+        );
+
+        $this->assertSame(404, $response['status']);
+    }
+
+    public function testDeleteRemovesThatUsersSubmission(): void
+    {
+        $deletedArgs = null;
+
+        $response = handleHistoryRequest(
+            'DELETE',
+            'Bearer good-token',
+            fn () => ['id' => 9, 'first_name' => 'Ada'],
+            fn () => [],
+            '42',
+            function (int $userId, int $submissionId) use (&$deletedArgs) {
+                $deletedArgs = [$userId, $submissionId];
+                return true;
+            }
+        );
+
+        $this->assertSame(200, $response['status']);
+        $this->assertTrue($response['body']['deleted']);
+        $this->assertSame([9, 42], $deletedArgs);
+    }
 }

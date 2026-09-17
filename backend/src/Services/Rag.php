@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../database/Database.php';
+require_once __DIR__ . '/../../database/Database.php';
 
 /**
  * Retrieval step: pick the knowledge chunks most relevant to this
@@ -98,6 +98,65 @@ function extractGeminiText(?string $response, int $status): ?string
     return null;
 }
 
+const GROUNDING_OVERLAP_THRESHOLD = 0.25;
+
+// Short function/filler words excluded from the overlap check so they don't
+// inflate or deflate the score in either direction - only words that could
+// plausibly carry a factual claim are compared.
+const GROUNDING_STOPWORDS = [
+    'the', 'and', 'for', 'with', 'this', 'that', 'from', 'your', 'you',
+    'its', 'are', 'was', 'were', 'has', 'have', 'not', 'but', 'they',
+    'their', 'offers', 'perfect', 'great', 'ideal', 'while', 'also',
+    'into', 'onto', 'than', 'when', 'where', 'what', 'who', 'which',
+];
+
+/**
+ * Lowercases, strips punctuation, and drops short/filler words - what's
+ * left is the set of words a truthfulness check can meaningfully compare.
+ */
+function contentWords(string $text): array
+{
+    $normalized = strtolower(preg_replace('/[^a-z0-9\s]/i', ' ', $text));
+    $words = array_filter(
+        explode(' ', $normalized),
+        fn ($w) => strlen($w) > 3 && !in_array($w, GROUNDING_STOPWORDS, true)
+    );
+
+    return array_values($words);
+}
+
+/**
+ * Truth/faithfulness gate: after Gemini writes a description, check that a
+ * meaningful share of its content words actually come from the facts it was
+ * given (the retrieved knowledge chunks, the Wikipedia extract, and the
+ * destination's own name/country) rather than the model's own general
+ * knowledge. This is a lexical heuristic, not semantic verification - it
+ * tolerates normal paraphrasing but catches the case where the model
+ * ignores the supplied grounding and answers from what it already "knows"
+ * instead, which would share almost no vocabulary with the source facts.
+ */
+function isGrounded(string $generatedText, array $chunks, array $dest): bool
+{
+    $sourceText = implode(' ', $chunks)
+        . ' ' . ($dest['wikipedia_extract'] ?? '')
+        . ' ' . $dest['name'] . ' ' . $dest['country'];
+    $sourceWords = array_flip(contentWords($sourceText));
+
+    $generatedWords = contentWords($generatedText);
+    if (!$generatedWords) {
+        return false;
+    }
+
+    $matched = 0;
+    foreach ($generatedWords as $word) {
+        if (isset($sourceWords[$word])) {
+            $matched++;
+        }
+    }
+
+    return ($matched / count($generatedWords)) >= GROUNDING_OVERLAP_THRESHOLD;
+}
+
 /**
  * Generation step: ask Gemini to turn each destination's stats + retrieved
  * knowledge chunks + the user's own answers into a short, personalized
@@ -105,7 +164,8 @@ function extractGeminiText(?string $response, int $status): ?string
  * quiz submission needs one per top match and Gemini's "thinking" models
  * take several seconds each. Falls back to each entry's own template
  * description on any failure (missing API key, network error, timeout,
- * unexpected response) so the app stays functional without it.
+ * unclean response, or a response that fails the isGrounded() truthfulness
+ * check) so the app stays functional without it.
  *
  * @param array $entries list of ['dest' => .., 'answers' => .., 'chunks' => .., 'fallback' => ..]
  * @return array[] list of ['text' => .., 'source' => 'gemini'|'fallback'], in the same order as
@@ -163,6 +223,9 @@ function generateDescriptionsBatch(array $entries): array
         curl_close($ch);
 
         $text = extractGeminiText($response, $status);
+        if ($text !== null && !isGrounded($text, $entries[$i]['chunks'], $entries[$i]['dest'])) {
+            $text = null;
+        }
         $results[$i] = $text !== null
             ? ['text' => $text, 'source' => 'gemini']
             : ['text' => $entries[$i]['fallback'], 'source' => 'fallback'];

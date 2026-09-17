@@ -1,10 +1,10 @@
 <?php
 
-require_once __DIR__ . '/../src/Env.php';
+require_once __DIR__ . '/../src/Core/Env.php';
 require_once __DIR__ . '/../database/Database.php';
-require_once __DIR__ . '/../src/Users.php';
-require_once __DIR__ . '/../src/PasswordResets.php';
-require_once __DIR__ . '/../src/PasswordResetEndpoint.php';
+require_once __DIR__ . '/../src/Models/Users.php';
+require_once __DIR__ . '/../src/Models/PasswordResets.php';
+require_once __DIR__ . '/../src/Controllers/PasswordResetEndpoint.php';
 
 loadEnv(__DIR__ . '/../.env');
 

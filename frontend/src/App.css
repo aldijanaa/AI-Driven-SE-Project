@@ -789,6 +789,27 @@ select.explore-select {
   gap: 6px;
 }
 
+.history-delete-button {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.history-delete-button:hover:not(:disabled) {
+  border-color: #d33;
+  color: #d33;
+}
+
+.history-delete-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .profile-section h2 {
   text-align: center;
   margin-bottom: 24px;

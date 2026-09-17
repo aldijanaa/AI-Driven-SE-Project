@@ -5,7 +5,7 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "travelmatch-verification",
-        "responseMode": "onReceived",
+        "responseMode": "lastNode",
         "options": {}
       },
       "id": "3a8f0f1a-0003-4a3e-9b1a-000000000001",

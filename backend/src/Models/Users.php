@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../database/Database.php';
+require_once __DIR__ . '/../../database/Database.php';
 
 /**
  * Loads a user by email, or null if no account uses it. See
@@ -155,6 +155,21 @@ function findSubmissionsByUserId(int $userId, int $limit = 50): array
             'results' => json_decode($row['results'], true) ?? [],
         ];
     }, $stmt->fetchAll());
+}
+
+/**
+ * Deletes one quiz submission from a user's history, scoped to that user so
+ * nobody can delete another user's entry by guessing an id. Returns whether
+ * a row was actually deleted.
+ */
+function deleteSubmissionByUserId(int $userId, int $submissionId): bool
+{
+    $stmt = getDb()->prepare('
+        DELETE FROM quiz_submissions WHERE id = :id AND user_id = :user_id
+    ');
+    $stmt->execute([':id' => $submissionId, ':user_id' => $userId]);
+
+    return $stmt->rowCount() > 0;
 }
 
 /**

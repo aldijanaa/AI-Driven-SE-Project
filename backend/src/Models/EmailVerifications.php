@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../database/Database.php';
+require_once __DIR__ . '/../../database/Database.php';
 
 /**
  * Issues a fresh verification code for a user, discarding any earlier one

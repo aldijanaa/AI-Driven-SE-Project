@@ -1,10 +1,10 @@
 <?php
 
-require_once __DIR__ . '/../src/Env.php';
+require_once __DIR__ . '/../src/Core/Env.php';
 require_once __DIR__ . '/../database/Database.php';
-require_once __DIR__ . '/../src/Users.php';
-require_once __DIR__ . '/../src/EmailVerifications.php';
-require_once __DIR__ . '/../src/AuthEndpoint.php';
+require_once __DIR__ . '/../src/Models/Users.php';
+require_once __DIR__ . '/../src/Models/EmailVerifications.php';
+require_once __DIR__ . '/../src/Controllers/AuthEndpoint.php';
 
 loadEnv(__DIR__ . '/../.env');
 

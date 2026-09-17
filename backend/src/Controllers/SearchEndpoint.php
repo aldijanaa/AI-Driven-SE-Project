@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/Embeddings.php';
+require_once __DIR__ . '/../Services/Embeddings.php';
 
 /**
  * Free-text semantic search over the destination catalog: embeds the

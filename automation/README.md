@@ -71,3 +71,16 @@ way a 2FA code works.
 Each workflow's **Format Email** node reads its own payload and builds the
 HTML email — adjust the template in that node if you want a different
 layout.
+
+## Webhook response mode
+
+Each Webhook node is set to `responseMode: lastNode`, meaning n8n only
+responds to the backend's request after the **Send Email** node has
+actually run — not the moment the webhook is received. This is deliberate:
+it lets the backend's HTTP status (`200` vs `502`) reflect whether the
+email genuinely got sent, not just whether n8n was reachable. If the SMTP
+step fails (bad credentials, provider down, etc.), the workflow errors out
+and the backend surfaces that as a real failure instead of reporting
+success. The tradeoff is a slightly slower response (it waits for the SMTP
+round-trip), which is well within the backend's 8s cURL timeout since
+sending one email is fast.

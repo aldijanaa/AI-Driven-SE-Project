@@ -1,7 +1,7 @@
 <?php
 
-require_once __DIR__ . '/Auth.php';
-require_once __DIR__ . '/PasswordPolicy.php';
+require_once __DIR__ . '/../Core/Auth.php';
+require_once __DIR__ . '/../Services/PasswordPolicy.php';
 
 /**
  * Handles POST /api/profile: updates the logged-in user's name and email.

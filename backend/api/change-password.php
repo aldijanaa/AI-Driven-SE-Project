@@ -1,9 +1,9 @@
 <?php
 
-require_once __DIR__ . '/../src/Env.php';
+require_once __DIR__ . '/../src/Core/Env.php';
 require_once __DIR__ . '/../database/Database.php';
-require_once __DIR__ . '/../src/Users.php';
-require_once __DIR__ . '/../src/ProfileEndpoint.php';
+require_once __DIR__ . '/../src/Models/Users.php';
+require_once __DIR__ . '/../src/Controllers/ProfileEndpoint.php';
 
 loadEnv(__DIR__ . '/../.env');
 

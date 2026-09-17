@@ -4,18 +4,18 @@
 ** PHPUnit setup for Unit Tests
 */
 
-require_once __DIR__ . '/../backend/src/Matcher.php';
-require_once __DIR__ . '/../backend/src/Health.php';
-require_once __DIR__ . '/../backend/src/MatchEndpoint.php';
-require_once __DIR__ . '/../backend/src/NotifyEndpoint.php';
-require_once __DIR__ . '/../backend/src/PasswordPolicy.php';
-require_once __DIR__ . '/../backend/src/Auth.php';
-require_once __DIR__ . '/../backend/src/AuthEndpoint.php';
-require_once __DIR__ . '/../backend/src/HistoryEndpoint.php';
-require_once __DIR__ . '/../backend/src/ExploreEndpoint.php';
-require_once __DIR__ . '/../backend/src/FavoritesEndpoint.php';
-require_once __DIR__ . '/../backend/src/ProfileEndpoint.php';
-require_once __DIR__ . '/../backend/src/PasswordResetEndpoint.php';
-require_once __DIR__ . '/../backend/src/EmailVerificationEndpoint.php';
-require_once __DIR__ . '/../backend/src/Embeddings.php';
-require_once __DIR__ . '/../backend/src/SearchEndpoint.php';
+require_once __DIR__ . '/../backend/src/Services/Matcher.php';
+require_once __DIR__ . '/../backend/src/Controllers/Health.php';
+require_once __DIR__ . '/../backend/src/Controllers/MatchEndpoint.php';
+require_once __DIR__ . '/../backend/src/Controllers/NotifyEndpoint.php';
+require_once __DIR__ . '/../backend/src/Services/PasswordPolicy.php';
+require_once __DIR__ . '/../backend/src/Core/Auth.php';
+require_once __DIR__ . '/../backend/src/Controllers/AuthEndpoint.php';
+require_once __DIR__ . '/../backend/src/Controllers/HistoryEndpoint.php';
+require_once __DIR__ . '/../backend/src/Controllers/ExploreEndpoint.php';
+require_once __DIR__ . '/../backend/src/Controllers/FavoritesEndpoint.php';
+require_once __DIR__ . '/../backend/src/Controllers/ProfileEndpoint.php';
+require_once __DIR__ . '/../backend/src/Controllers/PasswordResetEndpoint.php';
+require_once __DIR__ . '/../backend/src/Controllers/EmailVerificationEndpoint.php';
+require_once __DIR__ . '/../backend/src/Services/Embeddings.php';
+require_once __DIR__ . '/../backend/src/Controllers/SearchEndpoint.php';

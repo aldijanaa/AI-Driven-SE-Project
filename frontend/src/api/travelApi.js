@@ -57,6 +57,20 @@ export async function getHistory(token) {
   return data.submissions
 }
 
+export async function deleteHistoryEntry(token, submissionId) {
+  const response = await fetch(`${API_BASE}/history.php?id=${encodeURIComponent(submissionId)}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  })
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}))
+    throw new Error(body.error || `Request failed with status ${response.status}`)
+  }
+
+  return response.json()
+}
+
 export async function getFavorites(token) {
   const response = await fetch(`${API_BASE}/favorites.php`, {
     headers: { Authorization: `Bearer ${token}` },

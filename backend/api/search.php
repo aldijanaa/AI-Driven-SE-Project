@@ -1,10 +1,10 @@
 <?php
 
-require_once __DIR__ . '/../src/Env.php';
+require_once __DIR__ . '/../src/Core/Env.php';
 require_once __DIR__ . '/../database/Database.php';
-require_once __DIR__ . '/../src/Destinations.php';
-require_once __DIR__ . '/../src/Embeddings.php';
-require_once __DIR__ . '/../src/SearchEndpoint.php';
+require_once __DIR__ . '/../src/Models/Destinations.php';
+require_once __DIR__ . '/../src/Services/Embeddings.php';
+require_once __DIR__ . '/../src/Controllers/SearchEndpoint.php';
 
 loadEnv(__DIR__ . '/../.env');
 

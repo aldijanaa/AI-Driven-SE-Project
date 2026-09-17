@@ -9,9 +9,9 @@
  * Usage: php backend/scripts/generate-embeddings.php
  */
 
-require_once __DIR__ . '/../src/Env.php';
+require_once __DIR__ . '/../src/Core/Env.php';
 require_once __DIR__ . '/../database/Database.php';
-require_once __DIR__ . '/../src/Embeddings.php';
+require_once __DIR__ . '/../src/Services/Embeddings.php';
 
 loadEnv(__DIR__ . '/../.env');
 

@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../database/Database.php';
+require_once __DIR__ . '/../../database/Database.php';
 
 function isFavorited(int $userId, int $destinationId): bool
 {

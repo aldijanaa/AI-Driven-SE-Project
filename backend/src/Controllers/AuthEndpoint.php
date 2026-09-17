@@ -1,7 +1,7 @@
 <?php
 
-require_once __DIR__ . '/PasswordPolicy.php';
-require_once __DIR__ . '/Auth.php';
+require_once __DIR__ . '/../Services/PasswordPolicy.php';
+require_once __DIR__ . '/../Core/Auth.php';
 require_once __DIR__ . '/EmailVerificationEndpoint.php';
 
 const AUTH_GENERIC_LOGIN_ERROR = 'Invalid email or password';

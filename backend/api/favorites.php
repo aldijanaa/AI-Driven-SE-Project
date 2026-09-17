@@ -1,10 +1,10 @@
 <?php
 
-require_once __DIR__ . '/../src/Env.php';
+require_once __DIR__ . '/../src/Core/Env.php';
 require_once __DIR__ . '/../database/Database.php';
-require_once __DIR__ . '/../src/Users.php';
-require_once __DIR__ . '/../src/Favorites.php';
-require_once __DIR__ . '/../src/FavoritesEndpoint.php';
+require_once __DIR__ . '/../src/Models/Users.php';
+require_once __DIR__ . '/../src/Models/Favorites.php';
+require_once __DIR__ . '/../src/Controllers/FavoritesEndpoint.php';
 
 loadEnv(__DIR__ . '/../.env');
 

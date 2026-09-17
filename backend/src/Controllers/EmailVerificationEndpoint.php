@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/Auth.php';
+require_once __DIR__ . '/../Core/Auth.php';
 
 const VERIFICATION_CODE_LIFETIME_SECONDS = 60 * 15; // 15 minutes
 const VERIFICATION_MAX_ATTEMPTS = 5;

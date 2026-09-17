@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getHistory } from '../api/travelApi'
+import { deleteHistoryEntry, getHistory } from '../api/travelApi'
 import { useFavorites } from '../hooks/useFavorites'
 import DestinationCard from './DestinationCard'
 
@@ -15,6 +15,8 @@ function HistoryPage({ token }) {
   const [status, setStatus] = useState('loading') // loading | loaded | error
   const [submissions, setSubmissions] = useState([])
   const [errorMessage, setErrorMessage] = useState('')
+  const [deletingId, setDeletingId] = useState(null)
+  const [deleteError, setDeleteError] = useState('')
   const { favoriteIds, toggleFavorite } = useFavorites(token)
 
   useEffect(() => {
@@ -36,6 +38,22 @@ function HistoryPage({ token }) {
       cancelled = true
     }
   }, [token])
+
+  async function handleDelete(submissionId) {
+    if (!window.confirm('Delete this quiz result from your history?')) return
+
+    setDeleteError('')
+    setDeletingId(submissionId)
+
+    try {
+      await deleteHistoryEntry(token, submissionId)
+      setSubmissions((prev) => prev.filter((submission) => submission.id !== submissionId))
+    } catch (err) {
+      setDeleteError(err.message)
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   if (status === 'loading') {
     return <p className="status-message">Loading your history…</p>
@@ -61,6 +79,7 @@ function HistoryPage({ token }) {
   return (
     <section className="history-section">
       <h2>Your quiz history</h2>
+      {deleteError && <p className="status-message error">Couldn&apos;t delete that entry: {deleteError}</p>}
       <div className="history-list">
         {submissions.map((submission) => (
           <article key={submission.id} className="history-entry">
@@ -75,6 +94,14 @@ function HistoryPage({ token }) {
                 {submission.style && <span className="history-tag">{submission.style}</span>}
                 {submission.budgetLevel && <span className="history-tag">{submission.budgetLevel}</span>}
               </div>
+              <button
+                type="button"
+                className="history-delete-button"
+                onClick={() => handleDelete(submission.id)}
+                disabled={deletingId === submission.id}
+              >
+                {deletingId === submission.id ? 'Deleting…' : 'Delete'}
+              </button>
             </div>
             <div className="results-grid">
               {submission.results.map((result, index) => (

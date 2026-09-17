@@ -1,7 +1,7 @@
 <?php
 
-require_once __DIR__ . '/../src/Env.php';
-require_once __DIR__ . '/../src/NotifyEndpoint.php';
+require_once __DIR__ . '/../src/Core/Env.php';
+require_once __DIR__ . '/../src/Controllers/NotifyEndpoint.php';
 
 loadEnv(__DIR__ . '/../.env');
 

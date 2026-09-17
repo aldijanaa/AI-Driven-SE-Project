@@ -9,7 +9,7 @@
  */
 
 require_once __DIR__ . '/../database/Database.php';
-require_once __DIR__ . '/../src/Wikipedia.php';
+require_once __DIR__ . '/../src/Services/Wikipedia.php';
 
 $stmt = getDb()->query('SELECT id, name, country FROM destinations WHERE wikipedia_url IS NULL ORDER BY id');
 $pending = $stmt->fetchAll();

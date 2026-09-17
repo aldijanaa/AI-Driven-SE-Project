@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/Auth.php';
+require_once __DIR__ . '/../Core/Auth.php';
 
 /**
  * Handles both verbs on /api/favorites: GET lists the logged-in user's

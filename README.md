@@ -105,16 +105,27 @@ The frontend only shows the "✨ AI-generated, grounded in curated facts +
 Wikipedia" citation when it's actually true — a rule-based fallback
 description is never mislabeled as AI-grounded.
 
+**5. Post-generation truthfulness check — verifying the model actually used
+what it was given:** the prompt *instructs* Gemini to stay grounded, but an
+instruction alone doesn't guarantee compliance, so `isGrounded()` checks the
+output afterward. It strips filler/stop words from both the generated
+sentence and the combined source text (retrieved chunks + Wikipedia extract
++ the destination's own name/country), then requires at least 25% of the
+generated sentence's remaining content words to actually appear in that
+source text. A description that shares almost no vocabulary with what was
+retrieved — i.e. the model answered from its own general knowledge instead
+of the supplied facts — fails this check and is treated exactly like a
+Gemini failure: discarded in favor of the deterministic fallback.
+
 **Known limitations (worth being upfront about):** Wikipedia is
 community-edited, not a peer-reviewed source — it's a reasonable, freely
 accessible source for a student project, not an authoritative one. The
 curated `destination_knowledge` facts were hand-written from general
 knowledge rather than sourced from a specific citation at write time.
-Finally, the prompt *instructs* the model to stay grounded, but there's no
-automated post-generation check that verifies the output doesn't drift from
-the supplied facts — that would be a reasonable next step (e.g. a
-consistency check comparing the generated sentence against the retrieved
-chunks) beyond what's implemented here.
+`isGrounded()` is a lexical overlap heuristic, not semantic verification —
+it tolerates paraphrasing but can't catch a claim that's phrased using the
+same words yet asserts something the source doesn't actually say; a
+stronger (and costlier) version would use a second LLM call as a judge.
 
 ## Embeddings & semantic search
 

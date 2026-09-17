@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../database/Database.php';
+require_once __DIR__ . '/../../database/Database.php';
 
 const MATCH_REQUIRED_FIELDS = ['interests', 'style', 'weather', 'budgetLevel', 'companions'];
 
