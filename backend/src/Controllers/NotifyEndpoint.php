@@ -54,9 +54,8 @@ function sendNotifyWebhook(string $webhookUrl, array $payload): array
         CURLOPT_POST => true,
         CURLOPT_POSTFIELDS => json_encode($payload),
         CURLOPT_TIMEOUT => 8,
-        CURLOPT_CAINFO => __DIR__ . '/../cacert.pem',
         CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-    ]);
+    ] + curlCaOptions());
 
     $response = curl_exec($ch);
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);

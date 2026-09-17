@@ -197,12 +197,11 @@ function generateDescriptionsBatch(array $entries): array
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $payload,
             CURLOPT_TIMEOUT => 15,
-            CURLOPT_CAINFO => __DIR__ . '/../cacert.pem',
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json',
                 "x-goog-api-key: {$apiKey}",
             ],
-        ]);
+        ] + curlCaOptions());
         curl_multi_add_handle($multi, $ch);
         $handles[$i] = $ch;
     }
