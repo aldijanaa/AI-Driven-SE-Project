@@ -65,6 +65,65 @@ The React quiz UI the user interacts with.
 - By default it calls the API at `http://localhost:8000/api`. If your
   backend runs elsewhere, set `VITE_API_URL` in `frontend/.env`.
 
+## Deployment
+
+Backend + database go to Render, frontend goes to GitHub Pages. CORS is
+wide open (`Access-Control-Allow-Origin: *`) and auth uses a `Bearer` token
+(no cookies), so the two can live on different origins without extra setup.
+Render's free tier needs no credit card, unlike Heroku.
+
+### 1. Backend + database (Render)
+
+The root `Dockerfile` exists only for this — Render has no native PHP
+runtime, so the backend (which itself has no runtime dependencies) is served
+via `php:8.2-apache` with its document root pointed at `backend/api/`.
+
+Easiest path: push this repo to GitHub, then in the Render dashboard use
+**New → Blueprint** and point it at the repo — `render.yaml` at the repo
+root provisions both the free Postgres database and the Docker web service
+in one go. It'll prompt you for `GEMINI_API_KEY` (marked `sync: false`,
+so it's not committed) and leaves `FRONTEND_URL` set to this repo's GitHub
+Pages URL; adjust `render.yaml` first if yours differs.
+
+Without the Blueprint, do it manually:
+1. New → PostgreSQL → free plan → note the **Internal Database URL**.
+2. New → Web Service → Docker runtime, this repo → free plan.
+3. Set env vars on the web service: `DATABASE_URL` (the value from step 1),
+   `FRONTEND_URL`, `GEMINI_API_KEY`, and optionally `GEMINI_MODEL` /
+   `N8N_WEBHOOK_URL`.
+
+Then load the schema and migrations into the new database, in order (use
+the **External Database URL** from the Render dashboard here, since your
+machine isn't on Render's internal network):
+
+```
+psql "$EXTERNAL_DATABASE_URL" < backend/database/schema.sql
+for f in backend/database/migrations/*.sql; do psql "$EXTERNAL_DATABASE_URL" < "$f"; done
+```
+
+`DATABASE_URL` is parsed (with `sslmode=require`) by
+`backend/database/Database.php` — no `DB_HOST`/`DB_USER`/etc. env vars
+needed on Render.
+
+**Free-tier caveats:** the free web service spins down after inactivity
+(cold start on the next request), and the free Postgres database expires
+30 days after creation (14-day grace period to upgrade before it's
+deleted) — fine for a demo/student project, not for anything long-lived
+without upgrading the plan.
+
+### 2. Frontend (GitHub Pages)
+
+`.github/workflows/deploy-frontend.yml` builds and deploys `frontend/` on
+every push to `main` that touches it. One-time setup:
+
+- Repo Settings → Pages → Source: **GitHub Actions**.
+- Repo Settings → Secrets and variables → Actions → Variables → add
+  `VITE_API_URL` = your Heroku app's URL + `/api` (e.g.
+  `https://your-app-name.herokuapp.com/api`).
+
+The Vite `base` is already set to `/AI-Driven-SE-Project/` for production
+builds to match this repo's GitHub Pages URL.
+
 ## AI-generated descriptions: sources & trustworthiness
 
 Each quiz result's description is written by an LLM (Google Gemini), but it
