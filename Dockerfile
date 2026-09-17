@@ -14,9 +14,15 @@ RUN sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-av
 # Apache strips the Authorization header from PHP by default; the API's
 # Bearer-token auth needs it forwarded. CGIPassAuth is only valid inside a
 # directory-scoped context, not bare in apache2.conf.
+#
+# index.php is a front-controller router written for `php -S`, which passes
+# every request through it automatically. Apache has no equivalent for a
+# plain file request, so without FallbackResource it 404s on every /api/*
+# path directly (index.php is never even invoked) instead of routing to it.
 RUN { \
     echo "<Directory ${APACHE_DOCUMENT_ROOT}>"; \
     echo "    CGIPassAuth On"; \
+    echo "    FallbackResource /index.php"; \
     echo "</Directory>"; \
     } >> /etc/apache2/apache2.conf
 
