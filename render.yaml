@@ -35,4 +35,4 @@ services:
     staticPublishPath: ./dist
     envVars:
       - key: VITE_API_URL
-        value: https://travelmatch-backend.onrender.com/api
+        value: https://travelmatch-backend-k7qb.onrender.com/api
