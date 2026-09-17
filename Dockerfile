@@ -4,7 +4,10 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends libpq-dev libcurl4-openssl-dev libonig-dev \
     && docker-php-ext-install pdo pdo_pgsql curl mbstring \
     && apt-get clean && rm -rf /var/lib/apt/lists/* \
-    && a2enmod rewrite
+    && a2enmod rewrite \
+    # Apache strips the Authorization header from PHP by default; the API's
+    # Bearer-token auth needs it forwarded.
+    && echo "CGIPassAuth On" >> /etc/apache2/apache2.conf
 
 COPY . /var/www/html
 
